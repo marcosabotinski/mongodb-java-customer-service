@@ -32,8 +32,7 @@ public class CustomerController {
     }
 
     @PostMapping()
-    public void createCustomer(@RequestBody Customer newCustomer) {
-        dao.createCustomer(newCustomer);
+    public void createCustomer(@RequestBody Customer customer) {
+        dao.createCustomer(customer);
     }
-
 }
