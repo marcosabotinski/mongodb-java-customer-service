@@ -3,12 +3,15 @@ package com.sabotinski.mongodbexample.customerservice.api.dao;
 import static com.mongodb.client.model.Filters.eq;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+import com.mongodb.ConnectionString;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.mongodb.MongoClientSettings;
-import com.mongodb.client.MongoClient;
+
 import com.mongodb.client.MongoCollection;
 import com.sabotinski.mongodbexample.customerservice.api.models.B2BCustomer;
 import com.sabotinski.mongodbexample.customerservice.api.models.B2CCustomer;
@@ -27,6 +30,7 @@ public class CustomerDao {
     private static String CUSTOMER_COLLECTION_NAME = "customers";
     private MongoCollection<Customer> customerCollection;
     private CodecRegistry pojoCodecRegistry;
+    private MongoClient mongoclient;
 
     private final CodecProvider customerCodecProvider = PojoCodecProvider.builder()
             // Register all classes that can be used for automatic mapping from MongoDB to
@@ -37,13 +41,15 @@ public class CustomerDao {
             // classes explicitly
             .register(B2CCustomer.class).register(B2BCustomer.class).build();
 
+
     @Autowired
     public CustomerDao(MongoClient mongoClient, @Value("${db.databasename}") String databaseName) {
+        this.mongoclient = mongoClient;
         this.pojoCodecRegistry = fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
                 fromProviders(customerCodecProvider),
                 fromProviders(PojoCodecProvider.builder().automatic(true).build()));
 
-        customerCollection = mongoClient.getDatabase(databaseName)
+        customerCollection = this.mongoclient.getDatabase(databaseName)
                 .getCollection(CUSTOMER_COLLECTION_NAME, Customer.class).withCodecRegistry(pojoCodecRegistry);
     }
 
@@ -61,4 +67,5 @@ public class CustomerDao {
     public void createCustomer(Customer newCustomer) {
         customerCollection.insertOne(newCustomer);
     }
+
 }
